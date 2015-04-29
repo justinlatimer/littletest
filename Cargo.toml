@@ -2,3 +2,7 @@
 name = "littletest"
 version = "0.1.0"
 authors = ["Justin Latimer <justinlatimer@gmail.com>"]
+
+[dependencies.stopwatch]
+git = "https://github.com/xitep/rust-stopwatch.git"
+rev = "c78b54161bcc1d54180b1b51583eaf6a10353166"
