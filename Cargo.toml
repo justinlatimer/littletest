@@ -2,6 +2,14 @@
 name = "littletest"
 version = "0.1.0"
 authors = ["Justin Latimer <justinlatimer@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/justinlatimer/littletest"
+homepage = "https://github.com/justinlatimer/littletest"
+documentation = "https://github.com/justinlatimer/littletest"
+description = """
+A little testing library.
+"""
 
 [dependencies.stopwatch]
 git = "https://github.com/xitep/rust-stopwatch.git"
