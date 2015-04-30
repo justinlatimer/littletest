@@ -11,6 +11,5 @@ description = """
 A little testing library.
 """
 
-[dependencies.stopwatch]
-git = "https://github.com/xitep/rust-stopwatch.git"
-rev = "c78b54161bcc1d54180b1b51583eaf6a10353166"
+[dependencies]
+time = "*"

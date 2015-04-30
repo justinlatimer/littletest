@@ -1,7 +1,6 @@
-extern crate stopwatch;
+extern crate time;
 
 use std::fmt;
-use stopwatch::{Stopwatch};
 
 pub enum TestResult {
     Pass,
@@ -41,7 +40,8 @@ impl TestRunner {
 
         println!("# Running.\n");
 
-        let sw = Stopwatch::start_new();
+        let start_time = time::precise_time_ns();
+
         let mut results: Vec<TestResult>;
 
         {
@@ -64,8 +64,9 @@ impl TestRunner {
                 .collect();
         }
 
-        let time_ms = sw.elapsed_ms() as f64;
-        let time_s = time_ms / 1000f64;
+        let end_time = time::precise_time_ns();
+        let time_ms = end_time.wrapping_sub(start_time) as i64 / 1000000;
+        let time_s = time_ms as f64 / 1000f64;
         let runs_f = results.len() as f64;
         let runs_per_s = runs_f / time_s;
 
