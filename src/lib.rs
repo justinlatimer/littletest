@@ -32,6 +32,35 @@ struct TestStats {
     skips: usize,
 }
 
+impl TestStats {
+    fn new() -> TestStats {
+        TestStats {
+            runs: 0,
+            failures: 0,
+            errors: 0,
+            skips: 0
+        }
+    }
+
+    fn create(result: &TestResult) -> TestStats {
+        TestStats {
+            runs: 1,
+            failures: match *result { TestResult::Fail => 1, _ => 0 },
+            errors: match *result { TestResult::Error => 1, _ => 0 },
+            skips: match *result { TestResult::Skipped => 1, _ => 0 },
+        }
+    }
+
+    fn combine(a: TestStats, b: TestStats) -> TestStats {
+        TestStats {
+            runs: a.runs + b.runs,
+            failures: a.failures + b.failures,
+            errors: a.errors + b.errors,
+            skips: a.skips + b.skips
+        }
+    }
+}
+
 pub struct TestRunner;
 
 impl TestRunner {
@@ -74,23 +103,8 @@ impl TestRunner {
 
         let stats = results
             .iter()
-            .map(|result| TestStats {
-                runs: 1,
-                failures: match *result { TestResult::Fail => 1, _ => 0 },
-                errors: match *result { TestResult::Error => 1, _ => 0 },
-                skips: match *result { TestResult::Skipped => 1, _ => 0 },
-            })
-            .fold(TestStats {
-                runs: 0,
-                failures: 0,
-                errors: 0,
-                skips: 0
-            }, |a, b| TestStats {
-                runs: a.runs + b.runs,
-                failures: a.failures + b.failures,
-                errors: a.errors + b.errors,
-                skips: a.skips + b.skips
-            });
+            .map(TestStats::create)
+            .fold(TestStats::new(), TestStats::combine);
 
         println!("\n{} runs, {} failures, {} errors, {} skips.", stats.runs, stats.failures, stats.errors, stats.skips);
 
