@@ -1,6 +1,7 @@
 extern crate time;
 
 use std::fmt;
+use std::io;
 
 pub enum TestResult {
     Pass,
@@ -78,37 +79,56 @@ impl fmt::Display for TestStats {
     }
 }
 
+trait Reporter {
+    fn start(&mut self);
+    fn record(&mut self, result: &TestResult);
+    fn report(&mut self);
+}
+
+struct ProgressReporter {
+    output: io::Stdout
+}
+
+impl ProgressReporter {
+    fn new() -> ProgressReporter {
+        ProgressReporter {
+            output: io::stdout()
+        }
+    }
+}
+
+impl Reporter for ProgressReporter  {
+    fn start(&mut self) {}
+    fn record(&mut self, result: &TestResult) {
+        use std::io::{Write};
+        match write!(&mut self.output, "{}", result) {
+            Ok(_) => match self.output.flush() {
+                Ok(_) => {},
+                _ => panic!("Unable to flush test result")
+            },
+            _ => panic!("Unable to write test result")
+        };
+    }
+    fn report(&mut self) {}
+}
+
 pub struct TestRunner;
 
 impl TestRunner {
     pub fn run(&self, tests: &Vec<Box<Runnable>>) {
-        use std::io::{Write,stdout};
-
         println!("# Running.\n");
 
+        let mut reporter = ProgressReporter::new();
         let start_time = time::precise_time_ns();
 
-        let mut results: Vec<TestResult>;
-
-        {
-            let out = stdout();
-            let mut lock = out.lock();
-
-            results = tests
-                .iter()
-                .map(|test| {
-                    let result = test.run();
-                    match write!(&mut lock, "{}", result) {
-                        Ok(_) => match lock.flush() {
-                            Ok(_) => {},
-                            _ => panic!("Unable to flush test result")
-                        },
-                        _ => panic!("Unable to write test result")
-                    };
-                    result
-                })
-                .collect();
-        }
+        let results: Vec<TestResult> = tests
+            .iter()
+            .map(|test| test.run())
+            .map(|result| {
+                reporter.record(&result);
+                result
+            })
+            .collect();
 
         let end_time = time::precise_time_ns();
         let time_ms = end_time.wrapping_sub(start_time) as i64 / 1000000;
