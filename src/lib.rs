@@ -25,6 +25,17 @@ pub trait Runnable {
     fn run(&self) -> TestResult;
 }
 
+struct TestTimings {
+    time_s: f64,
+    runs_per_s: f64
+}
+
+impl fmt::Display for TestTimings {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Finished in {}s, {} runs/s.", self.time_s, self.runs_per_s)
+    }
+}
+
 struct TestStats {
     runs: usize,
     failures: usize,
@@ -58,6 +69,12 @@ impl TestStats {
             errors: a.errors + b.errors,
             skips: a.skips + b.skips
         }
+    }
+}
+
+impl fmt::Display for TestStats {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} runs, {} failures, {} errors, {} skips.", self.runs, self.failures, self.errors, self.skips)
     }
 }
 
@@ -96,17 +113,19 @@ impl TestRunner {
         let end_time = time::precise_time_ns();
         let time_ms = end_time.wrapping_sub(start_time) as i64 / 1000000;
         let time_s = time_ms as f64 / 1000f64;
-        let runs_f = results.len() as f64;
-        let runs_per_s = runs_f / time_s;
+        let timings = TestTimings {
+            time_s: time_s,
+            runs_per_s: results.len() as f64 / time_s
+        };
 
-        println!("\n\nFinished in {}s, {} runs/s.", time_s, runs_per_s);
+        println!("\n\n{}", timings);
 
         let stats = results
             .iter()
             .map(TestStats::create)
             .fold(TestStats::new(), TestStats::combine);
 
-        println!("\n{} runs, {} failures, {} errors, {} skips.", stats.runs, stats.failures, stats.errors, stats.skips);
+        println!("\n{}", stats);
 
         if stats.skips > 0 {
             println!("\nYou have skipped tests. Run with --verbose for details.");
