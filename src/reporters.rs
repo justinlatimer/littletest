@@ -10,6 +10,36 @@ pub trait Reporter {
     fn report(&mut self);
 }
 
+pub struct CompositeReporter {
+    reporters: Vec<Box<Reporter>>
+}
+
+impl CompositeReporter {
+    pub fn new(reporters: Vec<Box<Reporter>>) -> CompositeReporter {
+        CompositeReporter {
+            reporters: reporters
+        }
+    }
+}
+
+impl Reporter for CompositeReporter {
+    fn start(&mut self) {
+        for reporter in self.reporters.iter_mut() {
+            reporter.start();
+        }
+    }
+    fn record(&mut self, result: &TestResult) {
+        for reporter in self.reporters.iter_mut() {
+            reporter.record(result);
+        }
+    }
+    fn report(&mut self) {
+        for reporter in self.reporters.iter_mut() {
+            reporter.report();
+        }
+    }
+}
+
 pub struct ProgressReporter {
     output: io::Stdout
 }
