@@ -3,6 +3,7 @@ extern crate time;
 use std::fmt;
 use std::io;
 
+#[derive(Clone)]
 pub enum TestResult {
     Pass,
     Fail,
@@ -97,7 +98,7 @@ impl ProgressReporter {
     }
 }
 
-impl Reporter for ProgressReporter  {
+impl Reporter for ProgressReporter {
     fn start(&mut self) {}
     fn record(&mut self, result: &TestResult) {
         use std::io::{Write};
@@ -112,14 +113,61 @@ impl Reporter for ProgressReporter  {
     fn report(&mut self) {}
 }
 
+struct StatisticsReporter {
+    start_time: u64,
+    end_time: u64,
+    results: Vec<TestResult>
+}
+
+impl StatisticsReporter {
+    fn new() -> StatisticsReporter {
+        StatisticsReporter {
+            start_time: 0,
+            end_time: 0,
+            results: Vec::new()
+        }
+    }
+}
+
+impl Reporter for StatisticsReporter {
+    fn start(&mut self) {
+        println!("# Running.\n");
+        self.start_time = time::precise_time_ns();
+    }
+    fn record(&mut self, result: &TestResult) {
+        self.results.push(result.clone());
+    }
+    fn report(&mut self) {
+        self.end_time = time::precise_time_ns();
+
+        let time_ms = self.end_time.wrapping_sub(self.start_time) as i64 / 1000000;
+        let time_s = time_ms as f64 / 1000f64;
+        let timings = TestTimings {
+            time_s: time_s,
+            runs_per_s: self.results.len() as f64 / time_s
+        };
+
+        println!("\n\n{}", timings);
+
+        let stats = self.results
+            .iter()
+            .map(TestStats::create)
+            .fold(TestStats::new(), TestStats::combine);
+
+        println!("\n{}", stats);
+
+        if stats.skips > 0 {
+            println!("\nYou have skipped tests. Run with --verbose for details.");
+        }
+    }
+}
+
 pub struct TestRunner;
 
 impl TestRunner {
     pub fn run(&self, tests: &Vec<Box<Runnable>>) {
-        println!("# Running.\n");
-
-        let mut reporter = ProgressReporter::new();
-        let start_time = time::precise_time_ns();
+        let mut reporter = StatisticsReporter::new();
+        reporter.start();
 
         let results: Vec<TestResult> = tests
             .iter()
@@ -130,25 +178,6 @@ impl TestRunner {
             })
             .collect();
 
-        let end_time = time::precise_time_ns();
-        let time_ms = end_time.wrapping_sub(start_time) as i64 / 1000000;
-        let time_s = time_ms as f64 / 1000f64;
-        let timings = TestTimings {
-            time_s: time_s,
-            runs_per_s: results.len() as f64 / time_s
-        };
-
-        println!("\n\n{}", timings);
-
-        let stats = results
-            .iter()
-            .map(TestStats::create)
-            .fold(TestStats::new(), TestStats::combine);
-
-        println!("\n{}", stats);
-
-        if stats.skips > 0 {
-            println!("\nYou have skipped tests. Run with --verbose for details.");
-        }
+        reporter.report();
     }
 }
