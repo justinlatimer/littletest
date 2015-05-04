@@ -16,12 +16,7 @@ impl TestCase {
 
 impl Runnable for TestCase {
     fn run(&self) -> TestResult {
-        match self.result {
-            TestResult::Pass => TestResult::Pass,
-            TestResult::Fail => TestResult::Fail,
-            TestResult::Error => TestResult::Error,
-            TestResult::Skipped => TestResult::Skipped
-        }
+        self.result.clone()
     }
 }
 
