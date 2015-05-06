@@ -6,6 +6,8 @@ struct TestCase {
     result: TestResult
 }
 
+unsafe impl Sync for TestCase {}
+
 impl TestCase {
     fn new(result: TestResult) -> TestCase {
         TestCase {
@@ -22,11 +24,12 @@ impl Runnable for TestCase {
 
 #[test]
 fn it_works() {
-    let tests = vec![TestResult::Pass];
-    let runnables: Vec<Box<Runnable>> = tests
-        .into_iter()
-        .map(|result| Box::new(TestCase::new(result)) as Box<Runnable>)
-        .collect();
+    use std::iter::repeat;
+
+    let runnables = repeat(TestResult::Pass)
+        .take(10)
+        .map(|result| Box::new(TestCase::new(result)) as Box<Runnable + Sync>)
+        .collect::<Vec<_>>();
 
     let runner = TestRunner;
     runner.run(&runnables);

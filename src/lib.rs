@@ -1,3 +1,5 @@
+extern crate threadpool;
+
 mod types;
 pub use types::{TestResult};
 
@@ -11,7 +13,7 @@ use reporters::{Reporter,CompositeReporter,ProgressReporter,StatisticsReporter};
 pub struct TestRunner;
 
 impl TestRunner {
-    pub fn run(&self, tests: &Vec<Box<Runnable>>) {
+    pub fn run(&self, tests: &Vec<Box<Runnable + Sync>>) {
         let reporters: Vec<Box<Reporter>> = vec![
             Box::new(ProgressReporter::new()),
             Box::new(StatisticsReporter::new())
@@ -19,14 +21,22 @@ impl TestRunner {
         let mut reporter = CompositeReporter::new(reporters);
         reporter.start();
 
-        let results: Vec<TestResult> = tests
-            .iter()
-            .map(|test| test.run())
-            .map(|result| {
+        {
+            let (tx, rx) = std::sync::mpsc::channel();
+
+            let pool = threadpool::ScopedPool::new(4);
+            for test in tests.iter() {
+                let tx = tx.clone();
+                pool.execute(move|| {
+                    let result = test.run();
+                    tx.send(result).unwrap();
+                });
+            }
+
+            for result in rx.iter().take(tests.len()) {
                 reporter.record(&result);
-                result
-            })
-            .collect();
+            }
+        }
 
         reporter.report();
     }

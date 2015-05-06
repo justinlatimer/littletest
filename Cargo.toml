@@ -13,3 +13,7 @@ A little testing library.
 
 [dependencies]
 time = "*"
+
+[dependencies.threadpool]
+version = "*"
+features = ["scoped-pool"]
