@@ -1,6 +1,6 @@
 extern crate littletest;
 
-use littletest::{Runnable, TestResult, TestRunner};
+use littletest::{Runnable, TestResult, TestOptions, TestRunner};
 
 struct TestCase {
     result: TestResult
@@ -31,6 +31,8 @@ fn it_works() {
         .map(|result| Box::new(TestCase::new(result)) as Box<Runnable + Sync>)
         .collect::<Vec<_>>();
 
-    let runner = TestRunner;
+    let runner = TestRunner::new(TestOptions {
+        parallelism: Some(4)
+    });
     runner.run(&runnables);
 }
