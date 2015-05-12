@@ -6,8 +6,6 @@ struct TestCase {
     result: TestResult
 }
 
-unsafe impl Sync for TestCase {}
-
 impl TestCase {
     fn new(result: TestResult) -> TestCase {
         TestCase {
