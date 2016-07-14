@@ -27,7 +27,7 @@ pub struct TestTimings {
 
 impl fmt::Display for TestTimings {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Finished in {}s, {} runs/s.", self.time_s, self.runs_per_s)
+        write!(f, "Finished in {:3}s, {} runs/s.", self.time_s, self.runs_per_s)
     }
 }
 

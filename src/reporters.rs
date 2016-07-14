@@ -1,8 +1,7 @@
-extern crate time;
-
 use types::{TestResult,TestTimings,TestStats};
 
 use std::io;
+use std::time::Instant;
 
 pub trait Reporter {
     fn start(&mut self);
@@ -68,16 +67,14 @@ impl Reporter for ProgressReporter {
 }
 
 pub struct StatisticsReporter {
-    start_time: u64,
-    end_time: u64,
+    start_time: Instant,
     results: Vec<TestResult>
 }
 
 impl StatisticsReporter {
     pub fn new() -> StatisticsReporter {
         StatisticsReporter {
-            start_time: 0,
-            end_time: 0,
+            start_time: Instant::now(),
             results: Vec::new()
         }
     }
@@ -86,16 +83,15 @@ impl StatisticsReporter {
 impl Reporter for StatisticsReporter {
     fn start(&mut self) {
         println!("# Running.\n");
-        self.start_time = time::precise_time_ns();
+        self.start_time = Instant::now();
     }
     fn record(&mut self, result: &TestResult) {
         self.results.push(result.clone());
     }
     fn report(&mut self) {
-        self.end_time = time::precise_time_ns();
+        let elapsed = self.start_time.elapsed();
 
-        let time_ms = self.end_time.wrapping_sub(self.start_time) as i64 / 1000000;
-        let time_s = time_ms as f64 / 1000f64;
+        let time_s = elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1000_000_000f64;
         let timings = TestTimings {
             time_s: time_s,
             runs_per_s: self.results.len() as f64 / time_s

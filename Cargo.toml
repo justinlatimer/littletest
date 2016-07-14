@@ -12,8 +12,4 @@ A little testing library.
 """
 
 [dependencies]
-time = "*"
-
-[dependencies.threadpool]
-version = "*"
-features = ["scoped-pool"]
+rayon = "0.4.0"
