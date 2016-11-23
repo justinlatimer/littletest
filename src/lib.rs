@@ -1,4 +1,7 @@
-extern crate threadpool;
+extern crate rayon;
+
+use rayon::prelude::*;
+use rayon::par_iter::collect;
 
 mod types;
 pub use types::{TestResult};
@@ -10,23 +13,14 @@ pub trait Runnable {
 mod reporters;
 use reporters::{Reporter,CompositeReporter,ProgressReporter,StatisticsReporter};
 
-pub struct TestOptions {
-    pub parallelism: Option<u32>
-}
-
 pub struct TestRunner {
-    parallelism: u32
+    parallelism: bool
 }
 
 impl TestRunner {
-    pub fn new(options: TestOptions) -> TestRunner {
-        match options.parallelism {
-            Some(parallelism) => TestRunner {
-                parallelism: parallelism
-            },
-            None => TestRunner {
-                parallelism: 1
-            }
+    pub fn new(parallelism: bool) -> TestRunner {
+        TestRunner {
+            parallelism: parallelism
         }
     }
 
@@ -38,19 +32,16 @@ impl TestRunner {
         let mut reporter = CompositeReporter::new(reporters);
         reporter.start();
 
-        {
-            let (tx, rx) = std::sync::mpsc::channel();
+        if self.parallelism {
+            let mut results = Vec::with_capacity(tests.len());
+            collect::collect_into(tests.into_par_iter()
+                .map(move|test| test.run()), &mut results);
 
-            let pool = threadpool::ScopedPool::new(self.parallelism);
-            for test in tests.iter() {
-                let tx = tx.clone();
-                pool.execute(move|| {
-                    let result = test.run();
-                    tx.send(result).unwrap();
-                });
+            for result in results {
+                reporter.record(&result);
             }
-
-            for result in rx.iter().take(tests.len()) {
+        } else {
+            for result in tests.into_iter().map(|test| test.run()) {
                 reporter.record(&result);
             }
         }
