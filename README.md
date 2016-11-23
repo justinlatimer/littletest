@@ -1,8 +1,8 @@
 littletest
 ====
 
-[![Build Status](https://travis-ci.org/justinlatimer/littletest.svg?branch=master)](https://travis-ci.org/justinlatimer/littletest)
-[![](http://meritbadge.herokuapp.com/littletest)](https://crates.io/crates/littletest)
+[![Build Status](https://img.shields.io/travis/justinlatimer/littletest.svg)](https://travis-ci.org/justinlatimer/littletest)
+[![](https://img.shields.io/crates/v/littletest.svg)](https://crates.io/crates/littletest)
 
 A Rust testing library inspired by Ruby's [minitest](http://docs.seattlerb.org/minitest/).
 Useful for when you're porting something from Ruby or need tests generated at runtime.
