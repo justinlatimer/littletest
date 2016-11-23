@@ -12,4 +12,4 @@ A little testing library.
 """
 
 [dependencies]
-rayon = "0.4.0"
+rayon = "0.5"
