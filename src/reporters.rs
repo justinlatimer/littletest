@@ -1,4 +1,4 @@
-use types::{TestResult,TestTimings,TestStats};
+use types::{TestResult, TestTimings, TestStats};
 
 use std::io;
 use std::time::Instant;
@@ -10,14 +10,12 @@ pub trait Reporter {
 }
 
 pub struct CompositeReporter {
-    reporters: Vec<Box<Reporter>>
+    reporters: Vec<Box<Reporter>>,
 }
 
 impl CompositeReporter {
     pub fn new(reporters: Vec<Box<Reporter>>) -> CompositeReporter {
-        CompositeReporter {
-            reporters: reporters
-        }
+        CompositeReporter { reporters: reporters }
     }
 }
 
@@ -40,27 +38,27 @@ impl Reporter for CompositeReporter {
 }
 
 pub struct ProgressReporter {
-    output: io::Stdout
+    output: io::Stdout,
 }
 
 impl ProgressReporter {
     pub fn new() -> ProgressReporter {
-        ProgressReporter {
-            output: io::stdout()
-        }
+        ProgressReporter { output: io::stdout() }
     }
 }
 
 impl Reporter for ProgressReporter {
     fn start(&mut self) {}
     fn record(&mut self, result: &TestResult) {
-        use std::io::{Write};
+        use std::io::Write;
         match write!(&mut self.output, "{}", result) {
-            Ok(_) => match self.output.flush() {
-                Ok(_) => {},
-                _ => panic!("Unable to flush test result")
-            },
-            _ => panic!("Unable to write test result")
+            Ok(_) => {
+                match self.output.flush() {
+                    Ok(_) => {}
+                    _ => panic!("Unable to flush test result"),
+                }
+            }
+            _ => panic!("Unable to write test result"),
         };
     }
     fn report(&mut self) {}
@@ -68,14 +66,14 @@ impl Reporter for ProgressReporter {
 
 pub struct StatisticsReporter {
     start_time: Instant,
-    results: Vec<TestResult>
+    results: Vec<TestResult>,
 }
 
 impl StatisticsReporter {
     pub fn new() -> StatisticsReporter {
         StatisticsReporter {
             start_time: Instant::now(),
-            results: Vec::new()
+            results: Vec::new(),
         }
     }
 }
@@ -94,7 +92,7 @@ impl Reporter for StatisticsReporter {
         let time_s = elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1000_000_000f64;
         let timings = TestTimings {
             time_s: time_s,
-            runs_per_s: self.results.len() as f64 / time_s
+            runs_per_s: self.results.len() as f64 / time_s,
         };
 
         println!("\n\n{}", timings);

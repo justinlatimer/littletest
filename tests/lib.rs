@@ -3,14 +3,12 @@ extern crate littletest;
 use littletest::{Runnable, TestResult, TestRunner};
 
 struct TestCase {
-    result: TestResult
+    result: TestResult,
 }
 
 impl TestCase {
     fn new(result: TestResult) -> TestCase {
-        TestCase {
-            result: result
-        }
+        TestCase { result: result }
     }
 }
 
