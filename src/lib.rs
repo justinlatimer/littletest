@@ -22,7 +22,7 @@ impl TestRunner {
         TestRunner { parallelism: parallelism }
     }
 
-    pub fn run(&self, tests: &Vec<Box<Runnable + Sync>>) {
+    pub fn run<'run>(&self, tests: &Vec<Box<Runnable + Sync + 'run>>) {
         let reporters: Vec<Box<Reporter>> = vec![Box::new(ProgressReporter::new()),
                                                  Box::new(StatisticsReporter::new())];
         let mut reporter = CompositeReporter::new(reporters);
