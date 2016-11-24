@@ -1,6 +1,6 @@
 [package]
 name = "littletest"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Justin Latimer <justinlatimer@gmail.com>"]
 license = "MIT"
 readme = "README.md"
