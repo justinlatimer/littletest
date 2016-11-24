@@ -45,9 +45,7 @@ Once you have a list of tests, use a test runner to run them.
 use littletest::{Runnable, TestRunner, TestOptions}
 
 fn run(tests: &Vec<Box<Runnable + Sync>>) {
-    let runner = TestRunner::new(TestOptions {
-        parallelism: Some(4)
-    });
+    let runner = TestRunner::new(true);
     runner.run(tests);
 }
 ```
